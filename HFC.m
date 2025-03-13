@@ -9,7 +9,7 @@ t_trial = -0.5:(1/Fs):(9.5-1/Fs); % -0.5:+9.499 s
 n_trials = 1;
 t = (0:(length(t_trial)-1)) * (1/Fs);
 
-[signals, ~, ~, noise_freq_dict] = generate_signals(n_trials);
+[signals, ~, ~, freq_dict] = generate_signals(n_trials);
 
 %% Butter worth 4th Lowpass filter
 % fc = 10;  % Cutoff frequency
@@ -27,6 +27,7 @@ t = (0:(length(t_trial)-1)) * (1/Fs);
 
 %% HFC
 cfg = [];
+cfg.order = 3;
 data_hfc = ft_denoise_hfc(cfg,data);
 
 %% Before and after HFC plots
@@ -34,7 +35,7 @@ figure;
 [pxx_signal, f] = pwelch(data.trial{1}', [], [], 0:0.2:500, Fs); % Compute PSD
 %pxx_signal_T = sqrt(pxx_signal);  % Convert to T/Hz^(1/2) Amplitude Spectral density
 loglog(f, pxx_signal, 'b');
-title('Power Spectral Density of Signal before HFC');
+title('PSD of Signal before HFC (3rd order)');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
 grid on;
@@ -43,82 +44,90 @@ figure;
 [pxx_signal, f] = pwelch(data_hfc.trial{1}', [], [], 0:0.2:500, Fs); % Compute PSD
 %pxx_signal_T = sqrt(pxx_signal);  % Convert to T/Hz^(1/2) Amplitude Spectral density
 loglog(f, pxx_signal, 'b');
-title('Power Spectral Density of Signal after HFC');
+title('PSD of Signal after HFC (3rd order)');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
 grid on;
 
 %% PSD difference for each component (largest value)
-psd_diff_result = psd_diff(data.trial{1}, data_hfc.trial{1}, noise_freq_dict, Fs);
-
+%psd_diff_result = psd_diff(data.trial{1}, data_hfc.trial{1}, freq_dict, Fs);
+[max_diff, max_one_channel] = psd_diff(data.trial{1}, data_hfc.trial{1}, freq_dict, Fs);
 
 %% Shielding factor
-hfc = struct();
-
-hfc_result = cell(length(keys(noise_freq_dict)), 1);
-shielding_factor_max_dict = dictionary();
-shielding_factor_median_dict = dictionary();
-
-[pxx_signal, f] = pwelch(data.trial{1}', [], [], 0:0.2:500, Fs);
-psd_signal_before = pxx_signal';
-
-[pxx_signal, f] = pwelch(data_hfc.trial{1}', [], [], 0:0.2:500, Fs);
-psd_signal_after = pxx_signal';
-
-freqs = keys(noise_freq_dict);
-for i = 1:length(freqs)
-    freq = noise_freq_dict(freqs(i));
-    
-    idx = find(abs(f - freq) < 1e-6); % Adjust tolerance as needed
-
-    signal_before = psd_signal_before(:,idx);
-    signal_after = psd_signal_after(:,idx);
-
-    shielding_factor = signal_before ./ signal_after;
-
-    shielding_factor_max = max(shielding_factor);
-    shielding_factor_median = median(shielding_factor);
-
-    hfc_result{i} = [signal_before, signal_after, shielding_factor];
-    shielding_factor_max_dict(freqs(i)) = shielding_factor_max;
-    shielding_factor_median_dict(freqs(i)) = shielding_factor_median;
-end
-
-hfc.hfc_result = hfc_result;
-hfc.shielding_factor_max_dict = shielding_factor_max_dict;
-hfc.shielding_factor_median_dict = shielding_factor_median_dict;
+% hfc = struct();
+% 
+% hfc_result = cell(length(keys(freq_dict)), 1);
+% shielding_factor_max_dict = dictionary();
+% shielding_factor_median_dict = dictionary();
+% 
+% [pxx_signal, f] = pwelch(data.trial{1}', [], [], 0:0.2:500, Fs);
+% psd_signal_before = pxx_signal';
+% 
+% [pxx_signal, f] = pwelch(data_hfc.trial{1}', [], [], 0:0.2:500, Fs);
+% psd_signal_after = pxx_signal';
+% 
+% freqs = keys(freq_dict);
+% for i = 1:length(freqs)
+%     freq = freq_dict(freqs(i));
+% 
+%     idx = find(abs(f - freq) < 1e-6); % Adjust tolerance as needed
+% 
+%     signal_before = psd_signal_before(:,idx);
+%     signal_after = psd_signal_after(:,idx);
+% 
+%     shielding_factor = signal_before ./ signal_after;
+% 
+%     shielding_factor_max = max(shielding_factor);
+%     shielding_factor_median = median(shielding_factor);
+% 
+%     hfc_result{i} = [signal_before, signal_after, shielding_factor];
+%     shielding_factor_max_dict(freqs(i)) = shielding_factor_max;
+%     shielding_factor_median_dict(freqs(i)) = shielding_factor_median;
+% end
+% 
+% hfc.hfc_result = hfc_result;
+% hfc.shielding_factor_max_dict = shielding_factor_max_dict;
+% hfc.shielding_factor_median_dict = shielding_factor_median_dict;
 
 %% Box plot of shielding factors
 
 y = [];
-for i = 1:8
-    y(i) = psd_diff_result{i}(1,5);
+for i = 1:length(keys(freq_dict))
+    y(i) = max_diff{i}(1,5);
 end
 
 figure
-bar(keys(shielding_factor_median_dict), y)
+bar(keys(freq_dict), y)
 xlabel('Source')
 ylabel('Shielding factor')
-title('Max Source before/after Shielding factor of HFC')
+title('Max Shielding factor before/after of HFC (3rd order)')
 grid on
+
+y = [];
+for i = 1:length(keys(freq_dict))
+    y(i) = max_one_channel{i}(1,5);
+end
 
 figure
-bar(keys(shielding_factor_median_dict), values(shielding_factor_median_dict))
+bar(keys(freq_dict), y)
 xlabel('Source')
 ylabel('Shielding factor')
-title('Median Shielding factor of HFC')
+title('Max Shielding factor before / same channel after of HFC (3rd order)')
 grid on
 
-figure
-bar(keys(shielding_factor_max_dict), values(shielding_factor_max_dict))
-xlabel('Source')
-ylabel('Shielding factor')
-title('Max Shielding factor of HFC')
-grid on
-
-
-
-
+% figure
+% bar(keys(shielding_factor_median_dict), values(shielding_factor_median_dict))
+% xlabel('Source')
+% ylabel('Shielding factor')
+% title('Median Shielding factor of HFC')
+% grid on
+% 
+% figure
+% bar(keys(shielding_factor_max_dict), values(shielding_factor_max_dict))
+% xlabel('Source')
+% ylabel('Shielding factor')
+% title('Max Shielding factor of HFC')
+% grid on
 
 %% Topoplot before and after
 

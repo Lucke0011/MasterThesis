@@ -1,4 +1,4 @@
-function [signals, lf_brain, lf_external, noise_freq_dict] = generate_signals(n)
+function [signals, lf_brain, lf_external, freq_dict] = generate_signals(n)
     addpath('ECGSimulation')
     
     signals = cell(n,1);
@@ -12,14 +12,14 @@ function [signals, lf_brain, lf_external, noise_freq_dict] = generate_signals(n)
     t           = (0:(n_trials*length(t_trial)-1)) * (1/Fs);
     n_samples   = length(t);
     i_signal    = 9304; % source in 
-    noise_radius  = ["1m", "2m", "3m", "10m"]; % keys
+    noise_radius  = ["1m env", "2m env", "3m env", "10m env"]; % keys
     freqs       = [12, 16, 28, 40]; % values
-    noise_freq_dict = dictionary(noise_radius, freqs);
-    env_1m_amp  = 1e-3 * 1e10;
-    env_2m_amp  = 1e-2 * 1e10;
-    env_3m_amp  = 1e-1 * 1e10;
-    env_10m_amp = 1 * 1e10;
-    ecg_amp     = 1e-3 * 1e10;
+    freq_dict = dictionary(noise_radius, freqs);
+    env_1m_amp  = 1e-3;
+    env_2m_amp  = 1e-2;
+    env_3m_amp  = 1e-1;
+    env_10m_amp = 1;
+    ecg_amp     = 1e-3;
     components  = 3;
     B           = [];
     
@@ -30,7 +30,7 @@ function [signals, lf_brain, lf_external, noise_freq_dict] = generate_signals(n)
     % For each trail
     for i = 1:n
         %brain signal
-        q_signal = brain_signal(t) * 1e10;
+        q_signal = brain_signal(t);
         q = zeros(n_brain_sources, n_samples);
         q(i_signal, :) = q_signal;
         B.brain_signal = lf_brain*q;
@@ -43,10 +43,10 @@ function [signals, lf_brain, lf_external, noise_freq_dict] = generate_signals(n)
         end
     
         %environmental noise
-        environmental_noise_1m  = environmental_noise(t, noise_freq_dict("1m"), env_1m_amp);
-        environmental_noise_2m  = environmental_noise(t, noise_freq_dict("2m"), env_2m_amp);
-        environmental_noise_3m  = environmental_noise(t, noise_freq_dict("3m"), env_3m_amp);
-        environmental_noise_10m = environmental_noise(t, noise_freq_dict("10m"), env_10m_amp);
+        environmental_noise_1m  = environmental_noise(t, freq_dict("1m env"), env_1m_amp);
+        environmental_noise_2m  = environmental_noise(t, freq_dict("2m env"), env_2m_amp);
+        environmental_noise_3m  = environmental_noise(t, freq_dict("3m env"), env_3m_amp);
+        environmental_noise_10m = environmental_noise(t, freq_dict("10m env"), env_10m_amp);
     
         q = zeros(n_external_sources, n_samples);
         q(2, :) = environmental_noise_1m;
@@ -76,8 +76,8 @@ function [signals, lf_brain, lf_external, noise_freq_dict] = generate_signals(n)
         signal = B.brain_signal + B.sensor_noise + B.biological_noise + B.env_1m + B.env_2m + B.env_3m + B.env_10m;
         signals{i,1} = signal;
     end
-    noise_freq_dict("ecg_1") = locs(1,1);
-    noise_freq_dict("ecg_2") = locs(1,2);
-    noise_freq_dict("ecg_3") = locs(1,3);
-    noise_freq_dict("brain_signal") = 20;
+    freq_dict("ecg 1") = locs(1,1);
+    freq_dict("ecg 2") = locs(1,2);
+    freq_dict("ecg 3") = locs(1,3);
+    freq_dict("brain signal") = 20;
 end
