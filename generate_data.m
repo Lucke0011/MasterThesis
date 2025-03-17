@@ -1,6 +1,6 @@
-function [data, timelock] = generate_data(signals ,t)
+function [data, timelock] = generate_data(signal ,t)
     load('grad.mat')
-    n_trials = length(signals);
+    n_trials = 1;
     n_samples = length(t);
 
     data = [];
@@ -13,7 +13,7 @@ function [data, timelock] = generate_data(signals ,t)
     % trial
     data.trial = cell(1, n_trials);
     for i = 1:n_trials
-        data.trial{1, i} = signals{i};
+        data.trial{1, i} = signal;
     end
     
     data.sampleinfo = [((0:(n_trials-1))*n_samples)+1; ((1:n_trials)*n_samples)]';
@@ -24,7 +24,7 @@ function [data, timelock] = generate_data(signals ,t)
 
     timelock        = [];
     timelock.dimord = 'chan_time';
-    timelock.avg    = signals{1};
+    timelock.avg    = signal;
     timelock.label  = grad.label;
     timelock.time   = t;
     timelock.grad   = grad;

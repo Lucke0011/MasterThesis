@@ -6,15 +6,26 @@ projectors = 10;
 
 %% Generate signals
 
-[signal, ~, ~, freq_dict] = generate_signals(1);
+[signals, lf_brain, ~, freq_dict] = generate_signals(1); % Run with normal values for SSP
 signal_er = empty_room_signals(1);
 
-% Data
-[data, timelock] = generate_data(signal, t);
+%% Data
+data_cell = cell(length(signals), 1);
+timelock_cell = cell(length(signals), 1);
+for i = 1:length(signals)
+    [data, timelock] = generate_data(signals{i}, t);
+    data_cell{i} = data;
+    timelock_cell{i} = timelock;
+end
+
+[data, timelock] = generate_data(signals, t);
 [data_er, timelock_er] = generate_data(signal_er, t);
 
 signal_fif = 'signal-raw.fif';
 signal_er_fif  = 'signal-er-raw.fif';
+
+fileName = sprintf('%s%s%d%s', folderPath, filePrefix
+
 fieldtrip2fiff(signal_fif, data)
 fieldtrip2fiff(signal_er_fif, data_er)
 

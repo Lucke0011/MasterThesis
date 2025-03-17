@@ -9,7 +9,7 @@ t_trial = -0.5:(1/Fs):(9.5-1/Fs); % -0.5:+9.499 s
 n_trials = 1;
 t = (0:(length(t_trial)-1)) * (1/Fs);
 
-[signals, ~, ~, freq_dict] = generate_signals(n_trials);
+[signals, lf_brain, ~, freq_dict] = generate_signals(n_trials);
 
 %% Butter worth 4th Lowpass filter
 % fc = 10;  % Cutoff frequency
@@ -23,16 +23,35 @@ t = (0:(length(t_trial)-1)) * (1/Fs);
 % end
 
 %% Data
-[data, timelock] = generate_data(signals, t);
-
+data_cell = cell(length(signals), 1);
+timelock_cell = cell(length(signals), 1);
+for i = 1:length(signals)
+    [data, timelock] = generate_data(signals{i}, t);
+    data_cell{i} = data;
+    timelock_cell{i} = timelock;
+end
 %% HFC
 orders = 3;
-data_hfc = cell(orders, 1);
-for i = 1:orders
-    cfg = [];
-    cfg.order = i;
-    data_hfc{i} = ft_denoise_hfc(cfg,data);
+data_hfc_cell = cell(length(signals), orders); % signals x order (5x3)
+for j = 1:length(signals)
+    for i = 1:orders
+        cfg = [];
+        cfg.order = i;
+        data_hfc_cell{j, i} = ft_denoise_hfc(cfg, data_cell{j});
+    end
 end
+
+%% Mean of all signals
+
+data_hfc_mean = cell(orders, 1);
+for i = 1:orders
+    mean_temp = zeros(length(lf_brain(:,1)), 10000);
+    for j = 1:length(signals)
+        mean_temp = mean_temp + data_hfc_cell{j, i}.trial{1};
+    end
+    data_hfc_mean{i} = mean_temp / length(signals);
+end
+
 
 %% Before and after HFC plots
 figure;
@@ -45,7 +64,7 @@ ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 2)
-[pxx_signal, f] = pwelch(data_hfc{1}.trial{1}', [], [], 0:0.2:500, Fs);
+[pxx_signal, f] = pwelch(data_hfc_mean{1}', [], [], 0:0.2:500, Fs);
 loglog(f, pxx_signal, 'b');
 title('PSD of Signal after HFC (1st order)');
 xlabel('Frequency (Hz)');
@@ -53,7 +72,7 @@ ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 3)
-[pxx_signal, f] = pwelch(data_hfc{2}.trial{1}', [], [], 0:0.2:500, Fs);
+[pxx_signal, f] = pwelch(data_hfc_mean{2}', [], [], 0:0.2:500, Fs);
 loglog(f, pxx_signal, 'b');
 title('PSD of Signal after HFC (2nd order)');
 xlabel('Frequency (Hz)');
@@ -61,7 +80,7 @@ ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 4)
-[pxx_signal, f] = pwelch(data_hfc{3}.trial{1}', [], [], 0:0.2:500, Fs);
+[pxx_signal, f] = pwelch(data_hfc_mean{3}', [], [], 0:0.2:500, Fs);
 loglog(f, pxx_signal, 'b');
 title('PSD of Signal after HFC (3rd order)');
 xlabel('Frequency (Hz)');
@@ -69,7 +88,7 @@ ylabel('PSD (T^2/Hz)');
 grid on;
 
 %% PSD difference for each component (largest value)
-[max_diff, max_one_channel] = psd_diff(data.trial{1}, data_hfc, freq_dict, Fs, orders);
+[max_diff, max_one_channel] = psd_diff(data.trial{1}, data_hfc_mean, freq_dict, Fs, orders);
 
 %% Shielding factor
 % hfc = struct();
@@ -153,7 +172,7 @@ grid on
 cfg = [];
 cfg.layout = 'fieldlinebeta2bz_helmet.mat';
 
-ft_topoplotER(cfg, timelock);
+ft_topoplotER(cfg, timelock_cell);
 
 %after
 timelock_hfc        = [];

@@ -28,7 +28,7 @@ function [max_diff, max_one_channel] = psd_diff(signal_before, data_after, freq_
             
         for k = 1:n
             % After
-            [pxx_signal, f] = pwelch(data_after{k}.trial{1}', [], [], 0:0.2:500, Fs);
+            [pxx_signal, f] = pwelch(data_after{k}', [], [], 0:0.2:500, Fs);
             
             % Highest value measured
             psd_after = 0;

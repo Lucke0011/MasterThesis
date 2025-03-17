@@ -27,12 +27,12 @@ function [signals, lf_brain, lf_external, freq_dict] = generate_signals(n)
     [lf_brain, n_brain_sources] = generate_leadfield_brain();
     [lf_external, n_external_sources] = generate_leadfield_external();
     
-    % For each trail
+    % For each source
     for i = 1:length(sources)
         %brain signal
         q_signal = brain_signal(t) * 1e10;
         q = zeros(n_brain_sources, n_samples);
-        q(i_signal, :) = q_signal;
+        q(sources(i), :) = q_signal;
         B.brain_signal = lf_brain*q;
     
         %sensor noise
