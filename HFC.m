@@ -7,7 +7,7 @@ load('grad.mat')
 Fs = 1000;
 t_trial = -0.5:(1/Fs):(9.5-1/Fs); % -0.5:+9.499 s
 n_trials = 1;
-t = (0:(length(t_trial)-1)) * (1/Fs);w
+t = (0:(length(t_trial)-1)) * (1/Fs);
 
 [signals, ~, ~, freq_dict] = generate_signals(n_trials);
 
@@ -117,8 +117,8 @@ grid on;
 figure
 bar(keys(freq_dict), max_diff)
 xlabel('Source')
-ylabel('Shielding factor')
-title('Max Shielding factor before/after of HFC (3rd order)')
+ylabel('Shielding factor (dB)')
+title('Max Shielding factor before - after of HFC')
 grid on
 
 % y = [];
@@ -129,8 +129,8 @@ grid on
 figure
 bar(keys(freq_dict), max_one_channel)
 xlabel('Source')
-ylabel('Shielding factor')
-title('Max Shielding factor before / same channel after of HFC (3rd order)')
+ylabel('Shielding factor (dB)')
+title('Max Shielding factor before - same channel after of HFC')
 grid on
 
 % figure

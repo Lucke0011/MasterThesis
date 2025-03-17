@@ -86,8 +86,8 @@ ylabel('PSD (T^2/Hz)');
 figure
 bar(keys(freq_dict), max_diff)
 xlabel('Source')
-ylabel('Shielding factor')
-title('Max Shielding factor before/after of SSP')
+ylabel('Shielding factor (dB)')
+title('Max Shielding factor before - after of SSP')
 grid on
 
 % y = [];
@@ -98,8 +98,8 @@ grid on
 figure
 bar(keys(freq_dict), max_one_channel)
 xlabel('Source')
-ylabel('Shielding factor')
-title('Max Shielding factor before / same channel after of SSP')
+ylabel('Shielding factor (dB)')
+title('Max Shielding factor before - same channel after of SSP')
 grid on
 
 %% Topoplot before and after

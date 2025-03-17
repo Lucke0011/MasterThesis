@@ -15,16 +15,16 @@ function [ecg_ft_result, locs] = ecg_ft(components, Fs, L)
     [pks, locs] = findpeaks(P1, f_axis, 'MinPeakHeight', 0.1);
 
     % Plot frequency spectrum with peaks
-    figure;
-    plot(f_axis, P1);
-    xlim([-1 10])
-    hold on;
-    plot(locs, pks, 'ro', 'MarkerFaceColor', 'r'); % Mark peaks
-    title('Magnitude Spectrum with Peaks');
-    xlabel('Frequency (Hz)');
-    ylabel('|X(f)|');
-    grid on;
-    legend('Magnitude Spectrum', 'Peaks');
+    % figure;
+    % plot(f_axis, P1);
+    % xlim([-1 10])
+    % hold on;
+    % plot(locs, pks, 'ro', 'MarkerFaceColor', 'r'); % Mark peaks
+    % title('Magnitude Spectrum with Peaks');
+    % xlabel('Frequency (Hz)');
+    % ylabel('|X(f)|');
+    % grid on;
+    % legend('Magnitude Spectrum', 'Peaks');
     
     % Display peak values
     disp('Peak Frequencies and Magnitudes:');
@@ -48,12 +48,12 @@ function [ecg_ft_result, locs] = ecg_ft(components, Fs, L)
     x3 = pks(1,3)*sin(2*pi*locs(1,3)*t+ecg_components(3,3));
     ecg_ft_result = x1+x2+x3;
 
-    figure;
-    plot(t, ecg_ft_result);
-    title('ECG components');
-    xlabel('Time (s)');
-    ylabel('Amplitude');
-    grid on;
+    % figure;
+    % plot(t, ecg_ft_result);
+    % title('ECG components');
+    % xlabel('Time (s)');
+    % ylabel('Amplitude');
+    % grid on;
     
 end
 

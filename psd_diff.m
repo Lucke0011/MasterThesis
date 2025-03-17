@@ -51,10 +51,10 @@ function [max_diff, max_one_channel] = psd_diff(signal_before, data_after, freq_
             db_diff_one_channel = db_before - (10*log10(interp1(f, pxx_signal(:,index), freq)));
             % fprintf('The dB difference of %s at f = %.2f Hz is %f dB \n', freqs(i), freq, db_diff_one_channel);
     
-            max_diff(i, k)        = psd_diff;
-            max_one_channel(i, k) = psd_diff_one_channel;
-            % max_diff(i, k)        = db_diff;
-            % max_one_channel(i, k) = db_diff_one_channel;
+            % max_diff(i, k)        = psd_diff;
+            % max_one_channel(i, k) = psd_diff_one_channel;
+            max_diff(i, k)        = db_diff;
+            max_one_channel(i, k) = db_diff_one_channel;
         end
     end
 end

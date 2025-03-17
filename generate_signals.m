@@ -11,15 +11,15 @@ function [signals, lf_brain, lf_external, freq_dict] = generate_signals(n)
     n_trials    = 1;
     t           = (0:(n_trials*length(t_trial)-1)) * (1/Fs);
     n_samples   = length(t);
-    i_signal    = 9304; % source in 
+    sources = [15240, 11965, 6109, 3899, 1001];
     noise_radius  = ["1m env", "2m env", "3m env", "10m env"]; % keys
     freqs       = [12, 16, 28, 40]; % values
     freq_dict = dictionary(noise_radius, freqs);
-    env_1m_amp  = 1e-3;
-    env_2m_amp  = 1e-2;
-    env_3m_amp  = 1e-1;
-    env_10m_amp = 1;
-    ecg_amp     = 1e-3;
+    env_1m_amp  = 1e-3 * 1e10;
+    env_2m_amp  = 1e-2 * 1e10;
+    env_3m_amp  = 1e-1 * 1e10;
+    env_10m_amp = 1 * 1e10;
+    ecg_amp     = 1e-3 * 1e10;
     components  = 3;
     B           = [];
     
@@ -28,9 +28,9 @@ function [signals, lf_brain, lf_external, freq_dict] = generate_signals(n)
     [lf_external, n_external_sources] = generate_leadfield_external();
     
     % For each trail
-    for i = 1:n
+    for i = 1:length(sources)
         %brain signal
-        q_signal = brain_signal(t);
+        q_signal = brain_signal(t) * 1e10;
         q = zeros(n_brain_sources, n_samples);
         q(i_signal, :) = q_signal;
         B.brain_signal = lf_brain*q;
