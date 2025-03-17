@@ -7,7 +7,7 @@ load('grad.mat')
 Fs = 1000;
 t_trial = -0.5:(1/Fs):(9.5-1/Fs); % -0.5:+9.499 s
 n_trials = 1;
-t = (0:(length(t_trial)-1)) * (1/Fs);
+t = (0:(length(t_trial)-1)) * (1/Fs);w
 
 [signals, ~, ~, freq_dict] = generate_signals(n_trials);
 
@@ -26,23 +26,42 @@ t = (0:(length(t_trial)-1)) * (1/Fs);
 [data, timelock] = generate_data(signals, t);
 
 %% HFC
-cfg = [];
-cfg.order = 3;
-data_hfc = ft_denoise_hfc(cfg,data);
+orders = 3;
+data_hfc = cell(orders, 1);
+for i = 1:orders
+    cfg = [];
+    cfg.order = i;
+    data_hfc{i} = ft_denoise_hfc(cfg,data);
+end
 
 %% Before and after HFC plots
 figure;
-[pxx_signal, f] = pwelch(data.trial{1}', [], [], 0:0.2:500, Fs); % Compute PSD
-%pxx_signal_T = sqrt(pxx_signal);  % Convert to T/Hz^(1/2) Amplitude Spectral density
+subplot(2, 2, 1)
+[pxx_signal, f] = pwelch(data.trial{1}', [], [], 0:0.2:500, Fs);
 loglog(f, pxx_signal, 'b');
-title('PSD of Signal before HFC (3rd order)');
+title('PSD of Signal before HFC');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
 grid on;
 
-figure;
-[pxx_signal, f] = pwelch(data_hfc.trial{1}', [], [], 0:0.2:500, Fs); % Compute PSD
-%pxx_signal_T = sqrt(pxx_signal);  % Convert to T/Hz^(1/2) Amplitude Spectral density
+subplot(2, 2, 2)
+[pxx_signal, f] = pwelch(data_hfc{1}.trial{1}', [], [], 0:0.2:500, Fs);
+loglog(f, pxx_signal, 'b');
+title('PSD of Signal after HFC (1st order)');
+xlabel('Frequency (Hz)');
+ylabel('PSD (T^2/Hz)');
+grid on;
+
+subplot(2, 2, 3)
+[pxx_signal, f] = pwelch(data_hfc{2}.trial{1}', [], [], 0:0.2:500, Fs);
+loglog(f, pxx_signal, 'b');
+title('PSD of Signal after HFC (2nd order)');
+xlabel('Frequency (Hz)');
+ylabel('PSD (T^2/Hz)');
+grid on;
+
+subplot(2, 2, 4)
+[pxx_signal, f] = pwelch(data_hfc{3}.trial{1}', [], [], 0:0.2:500, Fs);
 loglog(f, pxx_signal, 'b');
 title('PSD of Signal after HFC (3rd order)');
 xlabel('Frequency (Hz)');
@@ -50,8 +69,7 @@ ylabel('PSD (T^2/Hz)');
 grid on;
 
 %% PSD difference for each component (largest value)
-%psd_diff_result = psd_diff(data.trial{1}, data_hfc.trial{1}, freq_dict, Fs);
-[max_diff, max_one_channel] = psd_diff(data.trial{1}, data_hfc.trial{1}, freq_dict, Fs);
+[max_diff, max_one_channel] = psd_diff(data.trial{1}, data_hfc, freq_dict, Fs, orders);
 
 %% Shielding factor
 % hfc = struct();
@@ -91,25 +109,25 @@ grid on;
 
 %% Box plot of shielding factors
 
-y = [];
-for i = 1:length(keys(freq_dict))
-    y(i) = max_diff{i}(1,5);
-end
+% y = [];
+% for i = 1:length(keys(freq_dict))
+%     y(i) = max_diff{i}(1,5);
+% end
 
 figure
-bar(keys(freq_dict), y)
+bar(keys(freq_dict), max_diff)
 xlabel('Source')
 ylabel('Shielding factor')
 title('Max Shielding factor before/after of HFC (3rd order)')
 grid on
 
-y = [];
-for i = 1:length(keys(freq_dict))
-    y(i) = max_one_channel{i}(1,5);
-end
+% y = [];
+% for i = 1:length(keys(freq_dict))
+%     y(i) = max_one_channel{i}(1,5);
+% end
 
 figure
-bar(keys(freq_dict), y)
+bar(keys(freq_dict), max_one_channel)
 xlabel('Source')
 ylabel('Shielding factor')
 title('Max Shielding factor before / same channel after of HFC (3rd order)')
