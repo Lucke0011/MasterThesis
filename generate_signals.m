@@ -1,7 +1,4 @@
-function [signals, lf_brain, lf_external, freq_dict] = generate_signals(n)
-    addpath('ECGSimulation')
-    
-    signals = cell(n,1);
+function [signals, lf_brain, lf_external, freq_dict] = generate_signals()
     
     % Parameters
     nr_sensors  = 123;
@@ -12,14 +9,15 @@ function [signals, lf_brain, lf_external, freq_dict] = generate_signals(n)
     t           = (0:(n_trials*length(t_trial)-1)) * (1/Fs);
     n_samples   = length(t);
     sources = [15240, 11965, 6109, 3899, 1001];
+    signals = cell(length(sources),1);
     noise_radius  = ["1m env", "2m env", "3m env", "10m env"]; % keys
     freqs       = [12, 16, 28, 40]; % values
     freq_dict = dictionary(noise_radius, freqs);
-    env_1m_amp  = 1e-3 * 1e10;
-    env_2m_amp  = 1e-2 * 1e10;
-    env_3m_amp  = 1e-1 * 1e10;
-    env_10m_amp = 1 * 1e10;
-    ecg_amp     = 1e-3 * 1e10;
+    env_1m_amp  = 1e-3;
+    env_2m_amp  = 1e-2;
+    env_3m_amp  = 1e-1;
+    env_10m_amp = 1;
+    ecg_amp     = 1e-3;
     components  = 3;
     B           = [];
     
@@ -30,7 +28,7 @@ function [signals, lf_brain, lf_external, freq_dict] = generate_signals(n)
     % For each source
     for i = 1:length(sources)
         %brain signal
-        q_signal = brain_signal(t) * 1e10;
+        q_signal = brain_signal(t);
         q = zeros(n_brain_sources, n_samples);
         q(sources(i), :) = q_signal;
         B.brain_signal = lf_brain*q;

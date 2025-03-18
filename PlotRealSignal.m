@@ -21,10 +21,10 @@ n_channels_er = length(empty_room_data.label);
 n_samples_er = length(empty_room_data.time{1});
 f_sample_er = empty_room_data.fsample;
 empty_room_signal = empty_room_data.trial{1}(:, 550000:600000); % n_channels x n_samples
-signal_er = zeros(124, 10001);
-for i = 1:124
-    signal_er(i,:) = decimate(empty_room_signal(i,:), M);
-end
+% signal_er = zeros(124, 10001);
+% for i = 1:124
+%     signal_er(i,:) = decimate(empty_room_signal(i,:), M);
+% end
 
 %%
 n_channels_rs = length(resting_state_data.label);
@@ -57,7 +57,7 @@ grid on;
 
 figure
 for i = 1:124
-    [pxx, f] = pwelch(signal_er(i, :), [], [], [], Fs_new);
+    [pxx, f] = pwelch(empty_room_signal(i, :), [], [], [], 5000);
     pxx_T = sqrt(pxx);
     loglog(f, pxx_T);
     hold on;
@@ -69,13 +69,13 @@ grid on;
 % pxx_T = sqrt(pxx);  % Convert to T/Hz^(1/2)
 % loglog(f, pxx_T, 'b');
 % hold on;
-[pxxn, f] = pwelch(signal_er(2, :), [], [], [], Fs_new); % Compute PSD
+[pxxn, f] = pwelch(sensor_noise_result, [], [], [], Fs_new); % Compute PSD
 pxx_n_T = sqrt(pxxn);  % Convert to T/Hz^(1/2)
 loglog(f, pxx_n_T, 'r');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T/Hz^{1/2})');
 title('Empty Room compared to Sensor Noise');
-% legend('Empty Room', 'Sensor Noise');
+legend('Empty Room', 'Sensor Noise');
 % grid on;
 
 %% PSD Empty Room compared to simulation

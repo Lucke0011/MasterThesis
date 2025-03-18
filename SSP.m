@@ -6,52 +6,56 @@ projectors = 10;
 
 %% Generate signals
 
-[signals, lf_brain, ~, freq_dict] = generate_signals(1); % Run with normal values for SSP
+[signals, lf_brain, ~, freq_dict] = generate_signals(); % Run with normal values for SSP
 signal_er = empty_room_signals(1);
 
 %% Data
+signal_fif = 'signal-raw-';
+signal_er_fif  = 'signal-er-raw';
+file_ext = '.fif';
+
 data_cell = cell(length(signals), 1);
 timelock_cell = cell(length(signals), 1);
 for i = 1:length(signals)
     [data, timelock] = generate_data(signals{i}, t);
     data_cell{i} = data;
     timelock_cell{i} = timelock;
+    signal_file_name = sprintf('%s%d%s', signal_fif, i, file_ext);
+    fieldtrip2fiff(signal_file_name, data)
 end
 
-[data, timelock] = generate_data(signals, t);
-[data_er, timelock_er] = generate_data(signal_er, t);
-
-signal_fif = 'signal-raw.fif';
-signal_er_fif  = 'signal-er-raw.fif';
-
-fileName = sprintf('%s%s%d%s', folderPath, filePrefix
-
-fieldtrip2fiff(signal_fif, data)
-fieldtrip2fiff(signal_er_fif, data_er)
+[data_er, timelock_er] = generate_data(signal_er{1}, t);
+empty_room_file_name = sprintf('%s%s', signal_er_fif, file_ext);
+fieldtrip2fiff(empty_room_file_name, data_er)
 
 %% Import SSP signal from mne python
 
-fiff_file = '/Users/lucke/Exjobb/MNEPython/mne-signal-raw-1.fif';
+folder_path = '/Users/lucke/Exjobb/MNEPython/';
+file_prefix = 'mne-signal-raw-';
+file_ext = '.fif';
+dash = '-';
 
-folderPath = '/Users/lucke/Exjobb/MNEPython/';
-filePrefix = 'mne-signal-raw-';
-fileExt = '.fif';
-
-data_ssp = cell(projectors, 1);
-for i = 1:projectors
-    fileName = sprintf('%s%s%d%s', folderPath, filePrefix, i, fileExt);
-    cfg = [];
-    cfg.dataset = fileName;
-    data_ssp{i} = ft_preprocessing(cfg);
-    fprintf('Loaded %s\n', fileName);
+data_ssp = cell(length(signals), projectors);
+for i = 1:length(signals)
+    for j = 1:projectors
+        fileName = sprintf('%s%s%d%s%d%s', folder_path, file_prefix, i, dash, j, file_ext);
+        cfg = [];
+        cfg.dataset = fileName;
+        data_ssp{i, j} = ft_preprocessing(cfg);
+        fprintf('Loaded %s\n', fileName);
+    end
 end
 
-% cfg         = [];
-% cfg.dataset = fiff_file;
-% data_mp     = ft_preprocessing(cfg);
-% ft_datatype(data_mp)  % should return 'raw'
-% 
-% data_ssp = generate_data(data_mp.trial, t);
+%% Mean of all signals
+
+data_ssp_mean = cell(projectors, 1);
+for i = 1:projectors
+    mean_temp = zeros(length(lf_brain(:,1)), 10000);
+    for j = 1:length(signals)
+        mean_temp = mean_temp + data_ssp{j, i}.trial{1};
+    end
+    data_ssp_mean{i} = mean_temp / length(signals);
+end
 
 %% Before and after SSP plots
 figure;
@@ -64,28 +68,31 @@ ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 2)
-[pxx_signal, f] = pwelch(data_ssp{1}.trial{1}', [], [], 0:0.2:500, Fs);
+[pxx_signal, f] = pwelch(data_ssp_mean{1}', [], [], 0:0.2:500, Fs);
 loglog(f, pxx_signal, 'b');
 title('PSD of Signal after SSP (1 projector)');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
+grid on;
 
 subplot(2, 2, 3)
-[pxx_signal, f] = pwelch(data_ssp{3}.trial{1}', [], [], 0:0.2:500, Fs);
+[pxx_signal, f] = pwelch(data_ssp_mean{3}', [], [], 0:0.2:500, Fs);
 loglog(f, pxx_signal, 'b');
 title('PSD of Signal after SSP (3 projectors)');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
+grid on;
 
 subplot(2, 2, 4)
-[pxx_signal, f] = pwelch(data_ssp{10}.trial{1}', [], [], 0:0.2:500, Fs);
+[pxx_signal, f] = pwelch(data_ssp_mean{10}', [], [], 0:0.2:500, Fs);
 loglog(f, pxx_signal, 'b');
 title('PSD of Signal after SSP (10 projectors)');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
+grid on;
 
 %% PSD difference for each component (largest value)
-[max_diff, max_one_channel] = psd_diff(data.trial{1}, data_ssp, freq_dict, Fs, projectors);
+[max_diff, max_one_channel] = psd_diff(data.trial{1}, data_ssp_mean, freq_dict, Fs, projectors);
 
 %% Box plot of shielding factors
 
