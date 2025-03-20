@@ -3,6 +3,8 @@ Fs = 1000;
 t_trial = -0.5:(1/Fs):(9.5-1/Fs); % -0.5:+9.499 s
 t = (0:(length(t_trial)-1)) * (1/Fs);
 
+%%
+
 [signals, lf_brain, ~, freq_dict] = generate_signals();
 
 %% Data
