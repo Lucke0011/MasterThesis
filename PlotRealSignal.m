@@ -4,7 +4,7 @@ M = Fs / Fs_new;
 
 %% Preprocessing
 cfg = [];
-cfg.datafile        = 'EmptyRoomOPM_raw.fif'; % Empty room without participant --> sensor and room noise
+cfg.datafile        = '20250318_144330_sub-0953_file-EmptyRoomOPM_raw.fif'; % Empty room without participant --> sensor and room noise
 cfg.channel         = '*bz';
 empty_room_data = ft_preprocessing(cfg);
 
@@ -55,11 +55,11 @@ grid on;
 
 [~, ~, sensor_noise_result] = sensor_noise(10000);
 
+%%
 figure
-for i = 1:124
+for i = 1:123
     [pxx, f] = pwelch(empty_room_signal(i, :), [], [], [], 5000);
-    pxx_T = sqrt(pxx);
-    loglog(f, pxx_T);
+    loglog(f, pxx);
     hold on;
 end
 grid on;
@@ -70,8 +70,7 @@ grid on;
 % loglog(f, pxx_T, 'b');
 % hold on;
 [pxxn, f] = pwelch(sensor_noise_result, [], [], [], Fs_new); % Compute PSD
-pxx_n_T = sqrt(pxxn);  % Convert to T/Hz^(1/2)
-loglog(f, pxx_n_T, 'r');
+loglog(f, pxxn, 'r');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T/Hz^{1/2})');
 title('Empty Room compared to Sensor Noise');

@@ -88,8 +88,7 @@ end
 
 figure;
 [pxx_signal, f] = pwelch(B.sensor_noise', [], [], [], Fs); % Compute PSD
-pxx_signal_T = sqrt(pxx_signal);  % Convert to T/Hz^(1/2)
-loglog(f, pxx_signal_T, 'b');
+loglog(f, pxx_signal);
 title('Power Spectral Density of Sensor noise');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T/Hz^{1/2})');

@@ -8,7 +8,7 @@ function [signals, lf_brain, lf_external, freq_dict] = generate_signals()
     n_trials    = 1;
     t           = (0:(n_trials*length(t_trial)-1)) * (1/Fs);
     n_samples   = length(t);
-    sources = [15240, 11965, 6109, 3899, 1001];
+    sources = [15240, 13921, 11965, 9101, 7412, 6109, 4782, 3899, 2294, 1001];
     signals = cell(length(sources),1);
     noise_radius  = ["1m env", "2m env", "3m env", "10m env"]; % keys
     freqs       = [12, 16, 28, 40]; % values
@@ -77,5 +77,5 @@ function [signals, lf_brain, lf_external, freq_dict] = generate_signals()
     freq_dict("ecg 1") = locs(1,1);
     freq_dict("ecg 2") = locs(1,2);
     freq_dict("ecg 3") = locs(1,3);
-    freq_dict("brain signal") = 20;
+    freq_dict("brain_signal") = 20;
 end

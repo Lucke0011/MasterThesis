@@ -29,15 +29,16 @@
 
 %% Strongest sources
 
+% Pick 10 sources spread over the brain
 sources = strongest_sources(lf_brain, n_brain_sources, 100);
 
-%% 5 sources around the brain
-sources1 = [15240, 11965, 6109, 3899, 1001];
+%% 10 sources around the brain
+sources1 = [15240, 13921, 11965, 9101, 7412, 6109, 4782, 3899, 2294, 1001];
 %%
 % 1304
 i_source = 9304; % picking a source
 load('sourcemodelT.mat')
-sourcemodelT.vnn = normals(sourcemodelT.pos,sourcemodelT.tri,'vertex');
+sourcemodelT.vnn = normals(sourcemodelT.pos,sourcemodelT.tri,'vertex'); % orientation (vnn) per source location
 
 % plot the location and orientation of the source in the brain surface
 figure
