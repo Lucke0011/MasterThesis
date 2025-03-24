@@ -9,6 +9,7 @@ t_trial = -0.5:(1/Fs):(9.5-1/Fs); % -0.5:+9.499 s
 t = (0:(length(t_trial)-1)) * (1/Fs);
 
 [signals, lf_brain, ~, freq_dict] = generate_signals();
+n_sensors = length(lf_brain(:,1));
 
 %% Butter worth 4th Lowpass filter
 % fc = 10;  % Cutoff frequency
@@ -29,6 +30,15 @@ for i = 1:length(signals)
     data_cell{i} = data;
     timelock_cell{i} = timelock;
 end
+
+%% Mean of raw signals
+
+data_mean = zeros(n_sensors, 10000);
+for i = 1:length(signals)
+    data_mean = data_mean + data_cell{i}.trial{1};
+end
+data_mean = data_mean / length(signals);
+
 %% HFC
 orders = 3;
 data_hfc_cell = cell(length(signals), orders); % signals x order
@@ -40,61 +50,103 @@ for j = 1:length(signals)
     end
 end
 
-%% Mean result of all signals
-
-data_hfc_mean = cell(orders, 1);
-for i = 1:orders
-    mean_temp = zeros(length(lf_brain(:,1)), 10000);
-    for j = 1:length(signals)
-        mean_temp = mean_temp + data_hfc_cell{j, i}.trial{1};
-    end
-    data_hfc_mean{i} = mean_temp / length(signals);
-end
-
-%% Mean of all signals
-
-data_mean = zeros(length(lf_brain(:,1)), 10000);
-for i = 1:length(signals)
-    data_mean = data_mean + data_cell{i}.trial{1};
-end
-data_mean = data_mean / length(signals);
-
 %% Before and after HFC plots
 figure;
 subplot(2, 2, 1)
-[pxx_signal, f] = pwelch(data_mean', [], [], 0:0.2:500, Fs);
-loglog(f, pxx_signal);
+[psd, f] = pwelch(data_mean', [], [], 0:0.2:500, Fs);
+loglog(f, psd);
 title('Signal before HFC');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 2)
-[pxx_signal, f] = pwelch(data_hfc_mean{1}', [], [], 0:0.2:500, Fs);
-loglog(f, pxx_signal);
+[psd, f] = pwelch(data_hfc_cell{1, 1}.trial{1}', [], [], 0:0.2:500, Fs);
+loglog(f, psd);
 title('Signal after HFC (1st order)');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 3)
-[pxx_signal, f] = pwelch(data_hfc_mean{2}', [], [], 0:0.2:500, Fs);
-loglog(f, pxx_signal);
+[psd, f] = pwelch(data_hfc_cell{1, 2}.trial{1}', [], [], 0:0.2:500, Fs);
+loglog(f, psd);
 title('Signal after HFC (2nd order)');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 4)
-[pxx_signal, f] = pwelch(data_hfc_mean{3}', [], [], 0:0.2:500, Fs);
-loglog(f, pxx_signal);
+[psd, f] = pwelch(data_hfc_cell{1, 3}.trial{1}', [], [], 0:0.2:500, Fs);
+loglog(f, psd);
 title('Signal after HFC (3rd order)');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
 grid on;
 
-%% PSD difference for each component (largest value)
-[max_diff, max_one_channel] = psd_diff(data_mean, data_hfc_mean, freq_dict, Fs, orders);
+%% Mean of Shielding factors
+max_diff = zeros(length(keys(freq_dict)), orders);
+max_one_channel = zeros(length(keys(freq_dict)), orders);
+
+% max_diff_mean = zeros(length(keys(freq_dict)), orders);
+% max_one_channel_mean = zeros(length(keys(freq_dict)), orders);
+
+freqs = keys(freq_dict);
+for i = 1:length(freqs)
+    freq = freq_dict(freqs(i));
+
+    for signal = 1:length(signals)
+        % Before
+        [psd, f] = pwelch(data_cell{signal}.trial{1}', [], [], 0:0.2:500, Fs); % 0.2 Hz
+        
+        % Highest value measured
+        psd_before = 0;
+        index = 0;
+        for j = 1:123
+            temp = interp1(f, psd(:,j), freq);
+            if temp > psd_before
+                psd_before = temp;
+                index = j;
+            end
+        end
+            
+        % After
+        for order = 1:orders
+            [psd, f] = pwelch(data_hfc_cell{signal, order}.trial{1}', [], [], 0:0.2:500, Fs);
+            
+            % Highest value measured
+            psd_after = 0;
+            for j = 1:n_sensors
+                temp = interp1(f, psd(:,j), freq);
+                if temp > psd_after
+                    psd_after = temp;
+                end
+            end
+            
+            % Shielding factor (max / max)
+            psd_diff = psd_before / psd_after;
+            %db_diff = 20*log10(psd_diff);
+    
+            % Shielding factor (max / same channel)
+            psd_diff_one_channel = psd_before / interp1(f, psd(:,index), freq); % Same channel (index) as max
+            %db_diff_one_channel = 20*log10(psd_diff_one_channel);
+            
+            max_diff(i, order)        = max_diff(i, order) + psd_diff;
+            max_one_channel(i, order) = max_one_channel(i, order) + psd_diff_one_channel;
+        end
+    end
+
+    % max_diff_mean(i, order) = max_diff_mean(i, order) + max_diff(:, order);
+    % max_one_channel_mean(i, order) = max_one_channel_mean(i, order) + max_one_channel(signal, order);
+end
+
+% Move mean of ecg here
+
+max_diff = max_diff / length(signals);
+max_diff = 20*log10(max_diff);
+max_one_channel = max_one_channel / length(signals);
+max_one_channel = 20*log10(max_one_channel);
+
 
 %% Mean of ecg
 
