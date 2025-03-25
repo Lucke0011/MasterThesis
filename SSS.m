@@ -15,6 +15,35 @@ for i = 1:length(signals)
     timelock_cell{i} = timelock;
 end
 
+%% MNE-SSS
+signal_fif = 'sss-signal-raw-';
+file_ext = '.fif';
+
+data_cell = cell(length(signals), 1);
+timelock_cell = cell(length(signals), 1);
+for i = 1:length(signals)
+    [data, timelock] = generate_data(signals{i}, t);
+    data_cell{i} = data;
+    timelock_cell{i} = timelock;
+    signal_file_name = sprintf('%s%d%s', signal_fif, i, file_ext);
+    fieldtrip2fiff(signal_file_name, data)
+end
+
+%% Import SSS from MNE
+
+folder_path = '/Users/lucke/Exjobb/MNEPython/';
+file_prefix = 'mne-sss-signal-raw-';
+file_ext = '.fif';
+
+data_sss = cell(length(signals), 1);
+for i = 1:length(signals)
+    fileName = sprintf('%s%s%d%s', folder_path, file_prefix, i, file_ext);
+    cfg = [];
+    cfg.dataset = fileName;
+    data_sss{i, j} = ft_preprocessing(cfg);
+    fprintf('Loaded %s\n', fileName);
+end
+
 %% Mean of raw signals
 
 data_mean = zeros(n_sensors, 10000);
