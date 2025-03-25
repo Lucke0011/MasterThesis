@@ -58,7 +58,7 @@ end
 %% Before and after SSP plots
 figure;
 subplot(2, 2, 1)
-[pxx_signal, f] = pwelch(data_mean', [], [], 0:0.2:500, Fs);
+[pxx_signal, f] = pwelch(data_cell{1}.trial{1}', [], [], 0:0.2:500, Fs);
 loglog(f, pxx_signal);
 title('Signal before SSP');
 xlabel('Frequency (Hz)');
@@ -66,7 +66,7 @@ ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 2)
-[pxx_signal, f] = pwelch(data_ssp{1}.trial{1}', [], [], 0:0.2:500, Fs);
+[pxx_signal, f] = pwelch(data_ssp{1,1}.trial{1}', [], [], 0:0.2:500, Fs);
 loglog(f, pxx_signal);
 title('Signal after SSP (1 projector)');
 xlabel('Frequency (Hz)');
@@ -74,15 +74,15 @@ ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 3)
-[pxx_signal, f] = pwelch(data_ssp{3}.trial{1}', [], [], 0:0.2:500, Fs);
+[pxx_signal, f] = pwelch(data_ssp{1,3}.trial{1}', [], [], 0:0.2:500, Fs);
 loglog(f, pxx_signal);
-title('ignal after SSP (3 projectors)');
+title('Signal after SSP (3 projectors)');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 4)
-[pxx_signal, f] = pwelch(data_ssp{10}.trial{1}', [], [], 0:0.2:500, Fs);
+[pxx_signal, f] = pwelch(data_ssp{1,10}.trial{1}', [], [], 0:0.2:500, Fs);
 loglog(f, pxx_signal);
 title('Signal after SSP (10 projectors)');
 xlabel('Frequency (Hz)');
@@ -90,8 +90,8 @@ ylabel('PSD (T^2/Hz)');
 grid on;
 
 %% Mean of Shielding factors
-max_diff = zeros(length(keys(freq_dict)), orders);
-max_one_channel = zeros(length(keys(freq_dict)), orders);
+max_diff = zeros(length(keys(freq_dict)), projectors);
+max_one_channel = zeros(length(keys(freq_dict)), projectors);
 
 freqs = keys(freq_dict);
 for i = 1:length(freqs)
@@ -177,7 +177,7 @@ max_one_channel = 20*log10(max_one_channel);
 figure
 h = bar(keys(freq_dict), max_diff);
 set(h, 'FaceColor', 'flat');
-for i = 1:orders
+for i = 1:projectors
     h(i).CData = max_diff(:, i)';
 end
 xlabel('Sources')
@@ -188,7 +188,7 @@ colorbar
 figure
 h = bar(keys(freq_dict), max_one_channel);
 set(h, 'FaceColor', 'flat');
-for i = 1:orders
+for i = 1:projectors
     h(i).CData = max_one_channel(:, i)';
 end
 xlabel('Sources')
@@ -197,6 +197,8 @@ grid on
 colorbar
 
 %% Topoplot before and after
+
+load('grad.mat')
 
 %before
 cfg = [];
@@ -207,7 +209,7 @@ ft_topoplotER(cfg, timelock);
 %after
 timelock_ssp        = [];
 timelock_ssp.dimord = 'chan_time';
-timelock_ssp.avg    = data_ssp.trial{1};
+timelock_ssp.avg    = data_ssp{1,10}.trial{1};
 timelock_ssp.label  = grad.label;
 timelock_ssp.time   = t;
 timelock_ssp.grad   = grad;
