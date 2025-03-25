@@ -1,12 +1,13 @@
-%% Parameters
+%% Init
+% Parameters
 Fs = 1000;
 t_trial = -0.5:(1/Fs):(9.5-1/Fs); % -0.5:+9.499 s
 t = (0:(length(t_trial)-1)) * (1/Fs);
 projectors = 10;
 
-%% Generate signals
-
+% Generate signals
 [signals, lf_brain, ~, freq_dict] = generate_signals(); % Run with normal values for SSP
+n_sensors = length(lf_brain(:,1));
 signal_er = empty_room_signals(1);
 
 %% Data
@@ -28,6 +29,14 @@ end
 empty_room_file_name = sprintf('%s%s', signal_er_fif, file_ext);
 fieldtrip2fiff(empty_room_file_name, data_er)
 
+%% Mean of raw signals
+
+data_mean = zeros(n_sensors, 10000);
+for i = 1:length(signals)
+    data_mean = data_mean + data_cell{i}.trial{1};
+end
+data_mean = data_mean / length(signals);
+
 %% Import SSP signal from mne python
 
 folder_path = '/Users/lucke/Exjobb/MNEPython/';
@@ -46,79 +55,146 @@ for i = 1:length(signals)
     end
 end
 
-%% Mean of all signals
-
-data_ssp_mean = cell(projectors, 1);
-for i = 1:projectors
-    mean_temp = zeros(length(lf_brain(:,1)), 10000);
-    for j = 1:length(signals)
-        mean_temp = mean_temp + data_ssp{j, i}.trial{1};
-    end
-    data_ssp_mean{i} = mean_temp / length(signals);
-end
-
 %% Before and after SSP plots
 figure;
 subplot(2, 2, 1)
-[pxx_signal, f] = pwelch(data.trial{1}', [], [], 0:0.2:500, Fs);
-loglog(f, pxx_signal, 'b');
-title('PSD of Signal before SSP');
+[pxx_signal, f] = pwelch(data_mean', [], [], 0:0.2:500, Fs);
+loglog(f, pxx_signal);
+title('Signal before SSP');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 2)
-[pxx_signal, f] = pwelch(data_ssp_mean{1}', [], [], 0:0.2:500, Fs);
-loglog(f, pxx_signal, 'b');
-title('PSD of Signal after SSP (1 projector)');
+[pxx_signal, f] = pwelch(data_ssp{1}.trial{1}', [], [], 0:0.2:500, Fs);
+loglog(f, pxx_signal);
+title('Signal after SSP (1 projector)');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 3)
-[pxx_signal, f] = pwelch(data_ssp_mean{3}', [], [], 0:0.2:500, Fs);
-loglog(f, pxx_signal, 'b');
-title('PSD of Signal after SSP (3 projectors)');
+[pxx_signal, f] = pwelch(data_ssp{3}.trial{1}', [], [], 0:0.2:500, Fs);
+loglog(f, pxx_signal);
+title('ignal after SSP (3 projectors)');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 4)
-[pxx_signal, f] = pwelch(data_ssp_mean{10}', [], [], 0:0.2:500, Fs);
-loglog(f, pxx_signal, 'b');
-title('PSD of Signal after SSP (10 projectors)');
+[pxx_signal, f] = pwelch(data_ssp{10}.trial{1}', [], [], 0:0.2:500, Fs);
+loglog(f, pxx_signal);
+title('Signal after SSP (10 projectors)');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
 grid on;
 
-%% PSD difference for each component (largest value)
-[max_diff, max_one_channel] = psd_diff(data.trial{1}, data_ssp_mean, freq_dict, Fs, projectors);
+%% Mean of Shielding factors
+max_diff = zeros(length(keys(freq_dict)), orders);
+max_one_channel = zeros(length(keys(freq_dict)), orders);
 
-%% Box plot of shielding factors
+freqs = keys(freq_dict);
+for i = 1:length(freqs)
+    freq = freq_dict(freqs(i));
 
-% y = [];
-% for i = 1:length(keys(freq_dict))
-%     y(i) = max_diff{i}(1,5);
+    for signal = 1:length(signals)
+        % Before
+        [psd, f] = pwelch(data_cell{signal}.trial{1}', [], [], 0:0.2:500, Fs); % 0.2 Hz
+        
+        % Highest value measured
+        psd_before = 0;
+        index = 0;
+        for j = 1:123
+            temp = interp1(f, psd(:,j), freq);
+            if temp > psd_before
+                psd_before = temp;
+                index = j;
+            end
+        end
+            
+        % After
+        for projector = 1:projectors
+            [psd, f] = pwelch(data_ssp{signal, projector}.trial{1}', [], [], 0:0.2:500, Fs);
+            
+            % Highest value measured
+            psd_after = 0;
+            for j = 1:n_sensors
+                temp = interp1(f, psd(:,j), freq);
+                if temp > psd_after
+                    psd_after = temp;
+                end
+            end
+            
+            % Shielding factor (max / max)
+            psd_diff = psd_before / psd_after;
+    
+            % Shielding factor (max / same channel)
+            psd_diff_one_channel = psd_before / interp1(f, psd(:,index), freq); % Same channel (index) as max
+            
+            max_diff(i, projector)        = max_diff(i, projector) + psd_diff;
+            max_one_channel(i, projector) = max_one_channel(i, projector) + psd_diff_one_channel;
+        end
+    end
+end
+
+% Move mean of ecg here
+ecg_components = 3;
+for i = 1:ecg_components-1
+    max_diff(5,:) = max_diff(5,:) + max_diff(5+1,:);
+    max_one_channel(5,:) = max_one_channel(5,:) + max_one_channel(5+1,:);
+    max_diff(5+1,:) = [];
+    max_one_channel(5+1,:) = [];
+end
+max_diff(5,:) = max_diff(5,:) / ecg_components;
+max_one_channel(5,:) = max_one_channel(5,:) / ecg_components;
+
+% Remove ecg 2 and 3
+freq_dict = remove(freq_dict, "ecg 2");
+freq_dict = remove(freq_dict, "ecg 3");
+freq_dict("ecg") = freq_dict("ecg 1");
+freq_dict("brain signal") = freq_dict("brain_signal");
+freq_dict = remove(freq_dict, "brain_signal");
+freq_dict = remove(freq_dict, "ecg 1");
+
+max_diff = max_diff / length(signals);
+max_diff = 20*log10(max_diff);
+max_one_channel = max_one_channel / length(signals);
+max_one_channel = 20*log10(max_one_channel);
+
+ %% Mean of all signals
+% 
+% data_ssp_mean = cell(projectors, 1);
+% for i = 1:projectors
+%     mean_temp = zeros(length(lf_brain(:,1)), 10000);
+%     for j = 1:length(signals)
+%         mean_temp = mean_temp + data_ssp{j, i}.trial{1};
+%     end
+%     data_ssp_mean{i} = mean_temp / length(signals);
 % end
 
-figure
-bar(keys(freq_dict), max_diff)
-xlabel('Source')
-ylabel('Shielding factor (dB)')
-title('Max Shielding factor before - after of SSP')
-grid on
-
-% y = [];
-% for i = 1:length(keys(freq_dict))
-%     y(i) = max_one_channel{i}(1,5);
-% end
+%% Bar plot of shielding factors
 
 figure
-bar(keys(freq_dict), max_one_channel)
-xlabel('Source')
+h = bar(keys(freq_dict), max_diff);
+set(h, 'FaceColor', 'flat');
+for i = 1:orders
+    h(i).CData = max_diff(:, i)';
+end
+xlabel('Sources')
 ylabel('Shielding factor (dB)')
-title('Max Shielding factor before - same channel after of SSP')
 grid on
+colorbar
+
+figure
+h = bar(keys(freq_dict), max_one_channel);
+set(h, 'FaceColor', 'flat');
+for i = 1:orders
+    h(i).CData = max_one_channel(:, i)';
+end
+xlabel('Sources')
+ylabel('Shielding factor (dB)')
+grid on
+colorbar
 
 %% Topoplot before and after
 

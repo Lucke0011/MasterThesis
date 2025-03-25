@@ -88,9 +88,6 @@ grid on;
 max_diff = zeros(length(keys(freq_dict)), orders);
 max_one_channel = zeros(length(keys(freq_dict)), orders);
 
-% max_diff_mean = zeros(length(keys(freq_dict)), orders);
-% max_one_channel_mean = zeros(length(keys(freq_dict)), orders);
-
 freqs = keys(freq_dict);
 for i = 1:length(freqs)
     freq = freq_dict(freqs(i));
@@ -135,21 +132,9 @@ for i = 1:length(freqs)
             max_one_channel(i, order) = max_one_channel(i, order) + psd_diff_one_channel;
         end
     end
-
-    % max_diff_mean(i, order) = max_diff_mean(i, order) + max_diff(:, order);
-    % max_one_channel_mean(i, order) = max_one_channel_mean(i, order) + max_one_channel(signal, order);
 end
 
 % Move mean of ecg here
-
-max_diff = max_diff / length(signals);
-max_diff = 20*log10(max_diff);
-max_one_channel = max_one_channel / length(signals);
-max_one_channel = 20*log10(max_one_channel);
-
-
-%% Mean of ecg
-
 ecg_components = 3;
 for i = 1:ecg_components-1
     max_diff(5,:) = max_diff(5,:) + max_diff(5+1,:);
@@ -167,6 +152,11 @@ freq_dict("ecg") = freq_dict("ecg 1");
 freq_dict("brain signal") = freq_dict("brain_signal");
 freq_dict = remove(freq_dict, "brain_signal");
 freq_dict = remove(freq_dict, "ecg 1");
+
+max_diff = max_diff / length(signals);
+max_diff = 20*log10(max_diff);
+max_one_channel = max_one_channel / length(signals);
+max_one_channel = 20*log10(max_one_channel);
 
 %% Bar plot of shielding factors
 
@@ -191,6 +181,32 @@ xlabel('Sources')
 ylabel('Shielding factor (dB)')
 grid on
 colorbar
+
+%% Bar plot of shielding factors OLD
+
+% y = [];
+% for i = 1:length(keys(freq_dict))
+%     y(i) = max_diff{i}(1,5);
+% end
+
+figure
+bar(keys(freq_dict), max_diff)
+xlabel('Source')
+ylabel('Shielding factor (dB)')
+title('Max Shielding factor before - after of SSP')
+grid on
+
+% y = [];
+% for i = 1:length(keys(freq_dict))
+%     y(i) = max_one_channel{i}(1,5);
+% end
+
+figure
+bar(keys(freq_dict), max_one_channel)
+xlabel('Source')
+ylabel('Shielding factor (dB)')
+title('Max Shielding factor before - same channel after of SSP')
+grid on
 
 %% Topoplot before and after
 
