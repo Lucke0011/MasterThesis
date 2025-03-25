@@ -53,7 +53,7 @@ end
 %% Before and after HFC plots
 figure;
 subplot(2, 2, 1)
-[psd, f] = pwelch(data_mean', [], [], 0:0.2:500, Fs);
+[psd, f] = pwelch(data_cell{1}.trial{1}', [], [], 0:0.2:500, Fs);
 loglog(f, psd);
 title('Signal before HFC');
 xlabel('Frequency (Hz)');
@@ -122,11 +122,9 @@ for i = 1:length(freqs)
             
             % Shielding factor (max / max)
             psd_diff = psd_before / psd_after;
-            %db_diff = 20*log10(psd_diff);
     
             % Shielding factor (max / same channel)
             psd_diff_one_channel = psd_before / interp1(f, psd(:,index), freq); % Same channel (index) as max
-            %db_diff_one_channel = 20*log10(psd_diff_one_channel);
             
             max_diff(i, order)        = max_diff(i, order) + psd_diff;
             max_one_channel(i, order) = max_one_channel(i, order) + psd_diff_one_channel;
@@ -134,7 +132,7 @@ for i = 1:length(freqs)
     end
 end
 
-% Move mean of ecg here
+% mean of ecg components
 ecg_components = 3;
 for i = 1:ecg_components-1
     max_diff(5,:) = max_diff(5,:) + max_diff(5+1,:);
