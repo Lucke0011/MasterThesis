@@ -57,8 +57,16 @@ data_mean = data_mean / length(signals);
 data_sss = cell(length(signals), 1); % signals x 1
 for i = 1:length(signals)
     cfg = [];
+    cfg.sss.order_in = 8;
+    cfg.sss.order_out = 3;
+    cfg.sss.regularize = 1;
     data_sss{i} = ft_denoise_sss(cfg, data_cell{i});
 end
+
+%% SSS spatial
+options = [];
+options.
+[sss] = sss_spatial(data_cell{1}, options);
 
 %% Before and after SSS plots
 figure;
