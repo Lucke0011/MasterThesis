@@ -36,11 +36,11 @@ file_prefix = 'mne-sss-signal-raw-';
 file_ext = '.fif';
 
 data_sss = cell(length(signals), 1);
-for i = 1:length(signals)
+for i = 1:1
     fileName = sprintf('%s%s%d%s', folder_path, file_prefix, i, file_ext);
     cfg = [];
     cfg.dataset = fileName;
-    data_sss{i, j} = ft_preprocessing(cfg);
+    data_sss{i} = ft_preprocessing(cfg);
     fprintf('Loaded %s\n', fileName);
 end
 
@@ -89,7 +89,7 @@ freqs = keys(freq_dict);
 for i = 1:length(freqs)
     freq = freq_dict(freqs(i));
 
-    for signal = 1:length(signals)
+    for signal = 1:1
         % Before
         [psd, f] = pwelch(data_cell{signal}.trial{1}', [], [], 0:0.2:500, Fs); % 0.2 Hz
         
@@ -148,9 +148,9 @@ freq_dict("brain signal") = freq_dict("brain_signal");
 freq_dict = remove(freq_dict, "brain_signal");
 freq_dict = remove(freq_dict, "ecg 1");
 
-max_diff = max_diff / length(signals);
+max_diff = max_diff / 1;
 max_diff = 20*log10(max_diff);
-max_one_channel = max_one_channel / length(signals);
+max_one_channel = max_one_channel / 1;
 max_one_channel = 20*log10(max_one_channel);
 
 %% Bar plot of shielding factors
