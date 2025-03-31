@@ -95,8 +95,8 @@ grid on;
 max_diff = zeros(length(keys(freq_dict)), orders);
 max_same_channel = zeros(length(keys(freq_dict)), orders);
 
-n_freqs = length(i_freqs);
 i_freqs = [61, 81, 141, 201, 7, 13, 19, 101]; % 12, 26, 28, 40, 1.2, 2.4, 3.6, 20 Hz
+n_freqs = length(i_freqs);
 
 for signal = 1:n_signals
 
@@ -107,7 +107,7 @@ for signal = 1:n_signals
 
         % After
         for projector = 1:projectors
-            [psd_after, ~] = pwelch(data_hfc_cell{signal, projector}.trial{1}', [], [], 0:0.2:500, Fs);
+            [psd_after, ~] = pwelch(data_ssp{signal, projector}.trial{1}', [], [], 0:0.2:500, Fs);
             [psd_after_max, ~] = max(psd_after(i_freqs(i_freq),:));
 
             % Shielding factor (max / max)
@@ -140,9 +140,9 @@ freq_dict("brain signal") = freq_dict("brain_signal");
 freq_dict = remove(freq_dict, "brain_signal");
 freq_dict = remove(freq_dict, "ecg 1");
 
-max_diff = max_diff / length(signals);
+max_diff = max_diff / n_signals;
 max_diff = 20*log10(max_diff);
-max_same_channel = max_same_channel / length(signals);
+max_same_channel = max_same_channel / n_signals;
 max_same_channel = 20*log10(max_same_channel);
 
 %% Bar plot of shielding factors

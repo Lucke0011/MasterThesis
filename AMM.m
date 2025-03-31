@@ -20,22 +20,24 @@ end
 
 data_amm = cell(length(signals), 1);
 for i = 1:n_signals
+    data_cell{i}.grad.type = 'neuromag306';
     D = spm_eeg_ft2spm(data_cell{i}, 'spm_raw');
     S = [];
     S.D = D;
-    [mfD,Yinds] = spm_opm_amm(S);
+    [spm_D,Yinds] = spm_opm_amm(S);
+    data_amm{i} = spm2fieldtrip(spm_D);
 end
 
 %% AMM fieldtrip
 
 data_amm = cell(length(signals), 1);
-for i = 1:n_signals
+for i = 1:1
     cfg = [];
     cfg.channel = '*bz';
     data_amm{i} = ft_denoise_amm(cfg, data_cell{i});
 end
 
-%% Before and after SSS plots
+%% Before and after AMM plots
 figure;
 subplot(2, 1, 1)
 [pxx_signal, f] = pwelch(data_cell{1}.trial{1}', [], [], 0:0.2:500, Fs);
@@ -55,11 +57,11 @@ grid on;
 
 %% Mean of Shielding factors
 
-max_diff = zeros(length(keys(freq_dict)), orders);
-max_same_channel = zeros(length(keys(freq_dict)), orders);
+max_diff = zeros(length(keys(freq_dict)), 1);
+max_same_channel = zeros(length(keys(freq_dict)), 1);
 
-n_freqs = length(i_freqs);
 i_freqs = [61, 81, 141, 201, 7, 13, 19, 101]; % 12, 26, 28, 40, 1.2, 2.4, 3.6, 20 Hz
+n_freqs = length(i_freqs);
 
 for signal = 1:n_signals
 
@@ -70,7 +72,7 @@ for signal = 1:n_signals
 
         % After
         for order = 1:1
-            [psd_after, ~] = pwelch(data_hfc_cell{signal, order}.trial{1}', [], [], 0:0.2:500, Fs);
+            [psd_after, ~] = pwelch(data_amm{signal, order}.trial{1}', [], [], 0:0.2:500, Fs);
             [psd_after_max, ~] = max(psd_after(i_freqs(i_freq),:));
 
             % Shielding factor (max / max)
@@ -103,9 +105,9 @@ freq_dict("brain signal") = freq_dict("brain_signal");
 freq_dict = remove(freq_dict, "brain_signal");
 freq_dict = remove(freq_dict, "ecg 1");
 
-max_diff = max_diff / length(signals);
+max_diff = max_diff / n_signals;
 max_diff = 20*log10(max_diff);
-max_same_channel = max_same_channel / length(signals);
+max_same_channel = max_same_channel / n_signals;
 max_same_channel = 20*log10(max_same_channel);
 
 %% Bar plot of shielding factors

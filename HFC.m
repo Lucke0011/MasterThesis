@@ -40,12 +40,12 @@ data_mean = data_mean / length(signals);
 
 %% HFC
 orders = 3;
-data_hfc_cell = cell(length(signals), orders); % signals x order
+data_hfc = cell(length(signals), orders); % signals x order
 for j = 1:n_signals
     for i = 1:orders
         cfg = [];
         cfg.order = i;
-        data_hfc_cell{j, i} = ft_denoise_hfc(cfg, data_cell{j});
+        data_hfc{j, i} = ft_denoise_hfc(cfg, data_cell{j});
     end
 end
 
@@ -60,7 +60,7 @@ ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 2)
-[psd, f] = pwelch(data_hfc_cell{1, 1}.trial{1}', [], [], 0:0.2:500, Fs);
+[psd, f] = pwelch(data_hfc{1, 1}.trial{1}', [], [], 0:0.2:500, Fs);
 loglog(f, psd);
 title('Signal after HFC (1st order)');
 xlabel('Frequency (Hz)');
@@ -68,7 +68,7 @@ ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 3)
-[psd, f] = pwelch(data_hfc_cell{1, 2}.trial{1}', [], [], 0:0.2:500, Fs);
+[psd, f] = pwelch(data_hfc{1, 2}.trial{1}', [], [], 0:0.2:500, Fs);
 loglog(f, psd);
 title('Signal after HFC (2nd order)');
 xlabel('Frequency (Hz)');
@@ -76,7 +76,7 @@ ylabel('PSD (T^2/Hz)');
 grid on;
 
 subplot(2, 2, 4)
-[psd, f] = pwelch(data_hfc_cell{1, 3}.trial{1}', [], [], 0:0.2:500, Fs);
+[psd, f] = pwelch(data_hfc{1, 3}.trial{1}', [], [], 0:0.2:500, Fs);
 loglog(f, psd);
 title('Signal after HFC (3rd order)');
 xlabel('Frequency (Hz)');
@@ -88,8 +88,8 @@ grid on;
 max_diff = zeros(length(keys(freq_dict)), orders);
 max_same_channel = zeros(length(keys(freq_dict)), orders);
 
-n_freqs = length(i_freqs);
 i_freqs = [61, 81, 141, 201, 7, 13, 19, 101]; % 12, 26, 28, 40, 1.2, 2.4, 3.6, 20 Hz
+n_freqs = length(i_freqs);
 
 for signal = 1:n_signals
 
@@ -100,7 +100,7 @@ for signal = 1:n_signals
 
         % After
         for order = 1:orders
-            [psd_after, ~] = pwelch(data_hfc_cell{signal, order}.trial{1}', [], [], 0:0.2:500, Fs);
+            [psd_after, ~] = pwelch(data_hfc{signal, order}.trial{1}', [], [], 0:0.2:500, Fs);
             [psd_after_max, ~] = max(psd_after(i_freqs(i_freq),:));
 
             % Shielding factor (max / max)
@@ -133,9 +133,9 @@ freq_dict("brain signal") = freq_dict("brain_signal");
 freq_dict = remove(freq_dict, "brain_signal");
 freq_dict = remove(freq_dict, "ecg 1");
 
-max_diff = max_diff / length(signals);
+max_diff = max_diff / n_signals;
 max_diff = 20*log10(max_diff);
-max_same_channel = max_same_channel / length(signals);
+max_same_channel = max_same_channel / n_signals;
 max_same_channel = 20*log10(max_same_channel);
 
 %% Bar plot of shielding factors
