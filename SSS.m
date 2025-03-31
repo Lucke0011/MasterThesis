@@ -21,12 +21,12 @@ file_ext = '.fif';
 
 data_cell = cell(length(signals), 1);
 timelock_cell = cell(length(signals), 1);
-for i = 1:length(signals)
+for i = 1:1
     [data, timelock] = generate_data(signals{i}, t);
     data_cell{i} = data;
     timelock_cell{i} = timelock;
     signal_file_name = sprintf('%s%d%s', signal_fif, i, file_ext);
-    fieldtrip2fiff(signal_file_name, data)
+    fieldtrip2fiff(signal_file_name, data, 'hdr', hdr)
 end
 
 %% Import SSS from MNE
@@ -62,11 +62,6 @@ for i = 1:length(signals)
     cfg.sss.regularize = 1;
     data_sss{i} = ft_denoise_sss(cfg, data_cell{i});
 end
-
-%% SSS spatial
-options = [];
-options.
-[sss] = sss_spatial(data_cell{1}, options);
 
 %% Before and after SSS plots
 figure;
@@ -161,23 +156,15 @@ max_one_channel = 20*log10(max_one_channel);
 %% Bar plot of shielding factors
 
 figure
-h = bar(keys(freq_dict), max_diff);
-set(h, 'FaceColor', 'flat');
-for i = 1:1
-    h(i).CData = max_diff(:, i)';
-end
-xlabel('Sources')
+bar(keys(freq_dict), max_diff)
+xlabel('Source')
 ylabel('Shielding factor (dB)')
+title('Max Shielding factor before - after of SSS')
 grid on
-colorbar
 
 figure
-h = bar(keys(freq_dict), max_one_channel);
-set(h, 'FaceColor', 'flat');
-for i = 1:1
-    h(i).CData = max_one_channel(:, i)';
-end
-xlabel('Sources')
+bar(keys(freq_dict), max_one_channel)
+xlabel('Source')
 ylabel('Shielding factor (dB)')
+title('Max Shielding factor before - same channel after of SSS')
 grid on
-colorbar

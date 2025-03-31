@@ -159,51 +159,17 @@ max_one_channel = 20*log10(max_one_channel);
 %% Bar plot of shielding factors
 
 figure
-h = bar(keys(freq_dict), max_diff);
-set(h, 'FaceColor', 'flat');
-for i = 1:orders
-    h(i).CData = max_diff(:, i)';
-end
-xlabel('Sources')
-ylabel('Shielding factor (dB)')
-grid on
-colorbar
-
-figure
-h = bar(keys(freq_dict), max_one_channel);
-set(h, 'FaceColor', 'flat');
-for i = 1:orders
-    h(i).CData = max_one_channel(:, i)';
-end
-xlabel('Sources')
-ylabel('Shielding factor (dB)')
-grid on
-colorbar
-
-%% Bar plot of shielding factors OLD
-
-% y = [];
-% for i = 1:length(keys(freq_dict))
-%     y(i) = max_diff{i}(1,5);
-% end
-
-figure
 bar(keys(freq_dict), max_diff)
 xlabel('Source')
 ylabel('Shielding factor (dB)')
-title('Max Shielding factor before - after of SSP')
+title('Max Shielding factor before - after of HFC')
 grid on
-
-% y = [];
-% for i = 1:length(keys(freq_dict))
-%     y(i) = max_one_channel{i}(1,5);
-% end
 
 figure
 bar(keys(freq_dict), max_one_channel)
 xlabel('Source')
 ylabel('Shielding factor (dB)')
-title('Max Shielding factor before - same channel after of SSP')
+title('Max Shielding factor before - same channel after of HFC')
 grid on
 
 %% Topoplot before and after

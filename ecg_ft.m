@@ -27,8 +27,8 @@ function [ecg_ft_result, locs] = ecg_ft(components, Fs, L)
     % legend('Magnitude Spectrum', 'Peaks');
     
     % Display peak values
-    disp('Peak Frequencies and Magnitudes:');
-    disp(table(locs', pks', 'VariableNames', {'Frequency_Hz', 'Magnitude'}));
+    % disp('Peak Frequencies and Magnitudes:');
+    % disp(table(locs', pks', 'VariableNames', {'Frequency_Hz', 'Magnitude'}));
 
     
     phase = angle(ecg_ft);
@@ -40,7 +40,7 @@ function [ecg_ft_result, locs] = ecg_ft(components, Fs, L)
         [~, idx] = min(abs(f_axis - locs(1,i)));
         phase_at_target = phase_single(idx);
         ecg_components(i,:) = [locs(1,i), pks(1,i), phase_at_target];
-        fprintf('At %.1f Hz: Magnitude = %.4f, Phase = %.2f degrees\n', locs(1,i), pks(1,i), phase_at_target);
+        % fprintf('At %.1f Hz: Magnitude = %.4f, Phase = %.2f degrees\n', locs(1,i), pks(1,i), phase_at_target);
     end
     
     x1 = pks(1,1)*sin(2*pi*locs(1,1)*t+ecg_components(1,3));

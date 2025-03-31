@@ -22,9 +22,10 @@ for i = 1:length(signals)
     data_cell{i} = data;
     timelock_cell{i} = timelock;
     signal_file_name = sprintf('%s%d%s', signal_fif, i, file_ext);
-    fieldtrip2fiff(signal_file_name, data)
+    %fieldtrip2fiff(signal_file_name, data)
 end
 
+%% t
 [data_er, timelock_er] = generate_data(signal_er{1}, t);
 empty_room_file_name = sprintf('%s%s', signal_er_fif, file_ext);
 fieldtrip2fiff(empty_room_file_name, data_er)
@@ -105,7 +106,7 @@ for i = 1:length(freqs)
         psd_before = 0;
         index = 0;
         for j = 1:123
-            temp = interp1(f, psd(:,j), freq);
+            temp = interp1(f, psd(:,j), freq); % change to max(psd(index of freq,:))
             if temp > psd_before
                 psd_before = temp;
                 index = j;
@@ -161,17 +162,6 @@ max_diff = 20*log10(max_diff);
 max_one_channel = max_one_channel / length(signals);
 max_one_channel = 20*log10(max_one_channel);
 
- %% Mean of all signals
-% 
-% data_ssp_mean = cell(projectors, 1);
-% for i = 1:projectors
-%     mean_temp = zeros(length(lf_brain(:,1)), 10000);
-%     for j = 1:length(signals)
-%         mean_temp = mean_temp + data_ssp{j, i}.trial{1};
-%     end
-%     data_ssp_mean{i} = mean_temp / length(signals);
-% end
-
 %% Bar plot of shielding factors
 
 figure
@@ -183,7 +173,7 @@ end
 xlabel('Sources')
 ylabel('Shielding factor (dB)')
 grid on
-colorbar
+colormap hot
 
 figure
 h = bar(keys(freq_dict), max_one_channel);
@@ -194,7 +184,23 @@ end
 xlabel('Sources')
 ylabel('Shielding factor (dB)')
 grid on
-colorbar
+colormap(flipud(hot))
+
+%% g
+
+figure
+bar(keys(freq_dict), max_diff)
+xlabel('Source')
+ylabel('Shielding factor (dB)')
+title('Max Shielding factor before - after of HFC')
+grid on
+
+figure
+bar(keys(freq_dict), max_one_channel)
+xlabel('Source')
+ylabel('Shielding factor (dB)')
+title('Max Shielding factor before - same channel after of HFC')
+grid on
 
 %% Topoplot before and after
 

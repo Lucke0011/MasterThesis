@@ -20,6 +20,10 @@ function [data, timelock] = generate_data(signal ,t)
     data.trialinfo = ones(n_trials, 1);
     data.grad = grad;
 
+    % for i = 1:length(grad.chantype)
+    %     data.grad.chantype{i} = {'MEG'};
+    % end
+
     data = ft_datatype_raw(data);
 
     timelock        = [];
