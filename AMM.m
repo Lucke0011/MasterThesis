@@ -31,7 +31,7 @@ end
 %% AMM fieldtrip
 
 data_amm = cell(length(signals), 1);
-for i = 1:1
+for i = 1:n_signals
     cfg = [];
     cfg.channel = '*bz';
     data_amm{i} = ft_denoise_amm(cfg, data_cell{i});

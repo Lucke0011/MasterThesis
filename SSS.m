@@ -52,7 +52,7 @@ for i = 1:n_signals
 end
 data_mean = data_mean / length(signals);
 
-%% SSS
+%% Fieldtrip SSS
 
 data_sss = cell(length(signals), 1); % signals x 1
 for i = 1:n_signals
@@ -83,8 +83,8 @@ grid on;
 
 %% Mean of Shielding factors
 
-max_diff = zeros(length(keys(freq_dict)), orders);
-max_same_channel = zeros(length(keys(freq_dict)), orders);
+max_diff = zeros(length(keys(freq_dict)), 1);
+max_same_channel = zeros(length(keys(freq_dict)), 1);
 
 i_freqs = [61, 81, 141, 201, 7, 13, 19, 101]; % 12, 26, 28, 40, 1.2, 2.4, 3.6, 20 Hz
 n_freqs = length(i_freqs);
