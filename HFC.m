@@ -88,7 +88,7 @@ grid on;
 max_diff = zeros(length(keys(freq_dict)), orders);
 max_same_channel = zeros(length(keys(freq_dict)), orders);
 
-i_freqs = [61, 81, 141, 201, 7, 13, 19, 101]; % 12, 26, 28, 40, 1.2, 2.4, 3.6, 20 Hz
+i_freqs = [61, 81, 141, 201, 41, 7, 13, 19, 101]; % 12, 26, 28, 40, 8, 1.2, 2.4, 3.6, 20 Hz
 n_freqs = length(i_freqs);
 
 for signal = 1:n_signals
@@ -117,13 +117,13 @@ end
 
 ecg_components = 3;
 for i = 1:ecg_components-1
-    max_diff(5,:) = max_diff(5,:) + max_diff(5+1,:);
-    max_same_channel(5,:) = max_same_channel(5,:) + max_same_channel(5+1,:);
-    max_diff(5+1,:) = [];
-    max_same_channel(5+1,:) = [];
+    max_diff(6,:) = max_diff(6,:) + max_diff(6+1,:);
+    max_same_channel(6,:) = max_same_channel(6,:) + max_same_channel(6+1,:);
+    max_diff(6+1,:) = [];
+    max_same_channel(6+1,:) = [];
 end
-max_diff(5,:) = max_diff(5,:) / ecg_components;
-max_same_channel(5,:) = max_same_channel(5,:) / ecg_components;
+max_diff(6,:) = max_diff(6,:) / ecg_components;
+max_same_channel(6,:) = max_same_channel(6,:) / ecg_components;
 
 % Remove ecg 2 and 3
 freq_dict = remove(freq_dict, "ecg 2");

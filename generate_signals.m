@@ -13,12 +13,14 @@ function [signals, lf_brain, lf_external, freq_dict] = generate_signals()
     noise_radius  = ["1m env", "2m env", "3m env", "10m env"]; % keys
     freqs       = [12, 16, 28, 40]; % values
     freq_dict = dictionary(noise_radius, freqs);
-    env_1m_amp  = 1e-3;
-    env_2m_amp  = 1e-2;
-    env_3m_amp  = 1e-1;
-    env_10m_amp = 1;
+    env_1m_amp  = 1e-2;
+    env_2m_amp  = 1e-1;
+    env_3m_amp  = 1;
+    env_10m_amp = 1e2;
     ecg_amp     = 1e-3;
     components  = 3;
+    dental_noise_amp = 1e-6;
+    dental_noise_f = 8;
     B           = [];
     
     % Generate leadfields
@@ -61,6 +63,12 @@ function [signals, lf_brain, lf_external, freq_dict] = generate_signals()
         q = zeros(n_external_sources, n_samples);
         q(5, :) = environmental_noise_10m;
         B.env_10m = lf_external * q;
+
+        %dental noise
+        dental_noise_result = dental_noise(t, dental_noise_f, dental_noise_amp);
+        q = zeros(n_external_sources, n_samples);
+        q(6, :) = dental_noise_result;
+        B.dental = lf_external * q;
     
         %biological noise
         [ecg_ft_result, locs] = ecg_ft(components, Fs, L);
@@ -71,9 +79,10 @@ function [signals, lf_brain, lf_external, freq_dict] = generate_signals()
         B.biological_noise = lf_external * q;
     
         % combined signal
-        signal = B.brain_signal + B.sensor_noise + B.biological_noise + B.env_1m + B.env_2m + B.env_3m + B.env_10m;
+        signal = B.brain_signal + B.sensor_noise + B.biological_noise + B.env_1m + B.env_2m + B.env_3m + B.env_10m + B.dental;
         signals{i,1} = signal;
     end
+    freq_dict("dental noise") = dental_noise_f;
     freq_dict("ecg 1") = locs(1,1);
     freq_dict("ecg 2") = locs(1,2);
     freq_dict("ecg 3") = locs(1,3);
