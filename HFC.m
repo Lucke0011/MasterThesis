@@ -1,5 +1,5 @@
 %% Init
-load('grad.mat')
+%load('grad.mat')
 
 % Parameters
 Fs = 1000;

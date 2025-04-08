@@ -1,7 +1,7 @@
 function [signals, lf_brain, lf_external, freq_dict] = generate_signals()
     
     % Parameters
-    nr_sensors  = 123;
+    nr_sensors  = 246;
     Fs          = 1000; % Hz
     L           = 10000; % Length of signal
     t_trial     = -0.5:(1/Fs):(9.5-1/Fs); % -0.5:+9.499 s

@@ -2,7 +2,8 @@ function [lf_brain, n_brain_sources] = generate_leadfield_brain()
     % Load data structures
     load('sourcemodelT.mat')
     load('headmodels.mat')
-    load('grad.mat')
+    %load('grad.mat')
+    load('grad_dual_axis.mat')
     
     % Calculate dipole directions
     sourcemodelT.vnn = normals(sourcemodelT.pos,sourcemodelT.tri,'vertex');

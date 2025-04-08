@@ -1,5 +1,7 @@
 function [data, timelock] = generate_data(signal ,t)
-    load('grad.mat')
+    %load('grad.mat')
+    load('grad_dual_axis.mat')
+    
     n_trials = 1;
     n_samples = length(t);
 
