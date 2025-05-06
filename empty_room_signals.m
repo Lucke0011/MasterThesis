@@ -3,7 +3,7 @@ function signals = empty_room_signals(n)
     signals = cell(n,1);
     
     % Parameters
-    nr_sensors  = 123;
+    nr_sensors  = 246;
     Fs          = 1000; % Hz
     t_trial     = -0.5:(1/Fs):(9.5-1/Fs); % -0.5:+9.499 s
     n_trials    = 1;
@@ -12,10 +12,10 @@ function signals = empty_room_signals(n)
     noise_radius  = ["1m", "2m", "3m", "10m"]; % keys
     freqs       = [12, 16, 28, 40]; % values
     noise_freq_dict = dictionary(noise_radius, freqs);
-    env_1m_amp  = 1e-3;
-    env_2m_amp  = 1e-2;
-    env_3m_amp  = 1e-1;
-    env_10m_amp = 1;
+    env_1m_amp  = 1e-2;
+    env_2m_amp  = 1e-1;
+    env_3m_amp  = 1;
+    env_10m_amp = 1e2;
     B           = [];
     
     % Generate leadfields

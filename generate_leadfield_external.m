@@ -1,7 +1,7 @@
 function [lf_external, n_external_sources] = generate_leadfield_external()
 % Load data structures
-%load('grad.mat')
-load('grad_dual_axis.mat')
+load('grad.mat')
+%load('grad_dual_axis.mat')
 
 %headmodel
 cfg = [];

@@ -52,15 +52,25 @@ for i = 1:n_signals
 end
 data_mean = data_mean / length(signals);
 
-%% Fieldtrip SSS
+%% Iterative Fieldtrip SSS
 
 data_sss = cell(length(signals), 1); % signals x 1
 for i = 1:n_signals
     cfg = [];
     cfg.sss.order_in = 9;
     cfg.sss.order_out = 3;
-    cfg.sss.regularize = 1;
     data_sss{i} = ft_denoise_sss(cfg, data_cell{i});
+end
+
+%% Interative tSSS
+
+iterations = 5; % Best accordingto paper for Lin = 8 and Lout = 3
+data_sss = cell(n_signals, 1); % signals x 1
+for i = 1:n_signals
+    cfg = [];
+    cfg.sss.order_in = 9;
+    cfg.sss.order_out = 3;
+    data_sss{i} = iterative_tsss(cfg, data_cell{i}, iterations, t);
 end
 
 %% Before and after SSS plots
@@ -80,13 +90,14 @@ title('Signal after SSS');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T^2/Hz)');
 grid on;
+%ylim([10e-30 10e-20])
 
 %% Mean of Shielding factors
 
 max_diff = zeros(length(keys(freq_dict)), 1);
 max_same_channel = zeros(length(keys(freq_dict)), 1);
 
-i_freqs = [61, 81, 141, 201, 7, 13, 19, 101]; % 12, 26, 28, 40, 1.2, 2.4, 3.6, 20 Hz
+i_freqs = [61, 81, 141, 201, 41, 7, 13, 19, 101]; % 12, 26, 28, 40, 8, 1.2, 2.4, 3.6, 20 Hz
 n_freqs = length(i_freqs);
 
 for signal = 1:n_signals
@@ -115,13 +126,13 @@ end
 
 ecg_components = 3;
 for i = 1:ecg_components-1
-    max_diff(5,:) = max_diff(5,:) + max_diff(5+1,:);
-    max_same_channel(5,:) = max_same_channel(5,:) + max_same_channel(5+1,:);
-    max_diff(5+1,:) = [];
-    max_same_channel(5+1,:) = [];
+    max_diff(6,:) = max_diff(6,:) + max_diff(6+1,:);
+    max_same_channel(6,:) = max_same_channel(6,:) + max_same_channel(6+1,:);
+    max_diff(6+1,:) = [];
+    max_same_channel(6+1,:) = [];
 end
-max_diff(5,:) = max_diff(5,:) / ecg_components;
-max_same_channel(5,:) = max_same_channel(5,:) / ecg_components;
+max_diff(6,:) = max_diff(6,:) / ecg_components;
+max_same_channel(6,:) = max_same_channel(6,:) / ecg_components;
 
 % Remove ecg 2 and 3
 freq_dict = remove(freq_dict, "ecg 2");

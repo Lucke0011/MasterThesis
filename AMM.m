@@ -3,7 +3,7 @@ Fs = 1000;
 t_trial = -0.5:(1/Fs):(9.5-1/Fs); % -0.5:+9.499 s
 t = (0:(length(t_trial)-1)) * (1/Fs);
 
-[signals, lf_brain, ~, freq_dict] = generate_signals(); % Hitting noise floor on 10m 
+[signals, lf_brain, ~, freq_dict] = generate_signals();
 n_sensors = length(lf_brain(:,1));
 n_signals = length(signals);
 
@@ -18,8 +18,8 @@ end
 
 %% AMM spm
 
-data_amm = cell(length(signals), 1);
-for i = 1:n_signals
+data_amm = cell(n_signals, 1);
+for i = 1:3
     data_cell{i}.grad.type = 'neuromag306';
     D = spm_eeg_ft2spm(data_cell{i}, 'spm_raw');
     S = [];
@@ -30,10 +30,10 @@ end
 
 %% AMM fieldtrip
 
-data_amm = cell(length(signals), 1);
-for i = 1:n_signals
+data_amm = cell(n_signals, 1);
+for i = 1:1
     cfg = [];
-    cfg.channel = '*bz';
+    cfg.channel = 'all';
     data_amm{i} = ft_denoise_amm(cfg, data_cell{i});
 end
 
@@ -60,7 +60,7 @@ grid on;
 max_diff = zeros(length(keys(freq_dict)), 1);
 max_same_channel = zeros(length(keys(freq_dict)), 1);
 
-i_freqs = [61, 81, 141, 201, 7, 13, 19, 101]; % 12, 26, 28, 40, 1.2, 2.4, 3.6, 20 Hz
+i_freqs = [61, 81, 141, 201, 41, 7, 13, 19, 101]; % 12, 26, 28, 40, 8, 1.2, 2.4, 3.6, 20 Hz
 n_freqs = length(i_freqs);
 
 for signal = 1:n_signals
@@ -89,13 +89,13 @@ end
 
 ecg_components = 3;
 for i = 1:ecg_components-1
-    max_diff(5,:) = max_diff(5,:) + max_diff(5+1,:);
-    max_same_channel(5,:) = max_same_channel(5,:) + max_same_channel(5+1,:);
-    max_diff(5+1,:) = [];
-    max_same_channel(5+1,:) = [];
+    max_diff(6,:) = max_diff(6,:) + max_diff(6+1,:);
+    max_same_channel(6,:) = max_same_channel(6,:) + max_same_channel(6+1,:);
+    max_diff(6+1,:) = [];
+    max_same_channel(6+1,:) = [];
 end
-max_diff(5,:) = max_diff(5,:) / ecg_components;
-max_same_channel(5,:) = max_same_channel(5,:) / ecg_components;
+max_diff(6,:) = max_diff(6,:) / ecg_components;
+max_same_channel(6,:) = max_same_channel(6,:) / ecg_components;
 
 % Remove ecg 2 and 3
 freq_dict = remove(freq_dict, "ecg 2");
