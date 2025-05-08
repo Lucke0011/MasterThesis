@@ -60,6 +60,8 @@ xlabel('Time (s)');
 ylabel('T (Tesla)');
 grid on;
 
+%%
+
 t_trial = -0.5:(1/Fs):(9.5-1/Fs); % -0.5:+0.499 s
 t = (0:(length(t_trial)-1)) * (1/Fs);
 
@@ -176,6 +178,8 @@ title('Magnetic field of Biological Noise');
 xlabel('Time (s)');
 ylabel('T (Tesla)');
 grid on;
+
+%%
 
 t_trial = -0.5:(1/Fs):(99.5-1/Fs); % -0.5:+0.499 s
 t = (0:(length(t_trial)-1)) * (1/Fs);
@@ -383,4 +387,26 @@ loglog(f, pxx_signal_T, 'b');
 title('Power Spectral Density of signal');
 xlabel('Frequency (Hz)');
 ylabel('PSD (T/Hz^{1/2})');
+grid on;
+
+%% Plot magnetic fields
+
+t_trial = -0.5:(1/Fs):(0.5-1/Fs); % -0.5:+0.499 s
+t = (0:(length(t_trial)-1)) * (1/Fs);
+
+subplot(2,1,1);
+plot(t, B.brain_signal)
+title('Sine wave');
+xlabel('Time (s)');
+ylabel('T (Tesla)');
+grid on;
+
+t_trial = -0.5:(1/Fs):(9.5-1/Fs); % -0.5:+0.499 s
+t = (0:(length(t_trial)-1)) * (1/Fs);
+
+subplot(2,1,2);
+plot(t, B.biological_noise)
+title('Heartbeat');
+xlabel('Time (s)');
+ylabel('T (Tesla)');
 grid on;

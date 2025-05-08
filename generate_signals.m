@@ -12,11 +12,11 @@ function [signals, lf_brain, lf_external, freq_dict] = generate_signals()
     signals = cell(length(sources),1);
     noise_radius  = ["1m env", "2m env", "3m env", "10m env"]; % keys
     freqs       = [12, 16, 28, 40]; % values
-    freq_dict = dictionary(noise_radius, freqs);
-    env_1m_amp  = 1e-2;
-    env_2m_amp  = 1e-1;
-    env_3m_amp  = 1;
-    env_10m_amp = 1e2;
+    temp_freq_dict = dictionary(noise_radius, freqs);
+    env_1m_amp  = 1e-3;
+    env_2m_amp  = 1e-2;
+    env_3m_amp  = 1e-1;
+    env_10m_amp = 1;
     ecg_amp     = 1e-3;
     components  = 3;
     dental_noise_amp = 1e-6;
@@ -43,10 +43,10 @@ function [signals, lf_brain, lf_external, freq_dict] = generate_signals()
         end
     
         %environmental noise
-        environmental_noise_1m  = environmental_noise(t, freq_dict("1m env"), env_1m_amp);
-        environmental_noise_2m  = environmental_noise(t, freq_dict("2m env"), env_2m_amp);
-        environmental_noise_3m  = environmental_noise(t, freq_dict("3m env"), env_3m_amp);
-        environmental_noise_10m = environmental_noise(t, freq_dict("10m env"), env_10m_amp);
+        environmental_noise_1m  = environmental_noise(t, temp_freq_dict("1m env"), env_1m_amp);
+        environmental_noise_2m  = environmental_noise(t, temp_freq_dict("2m env"), env_2m_amp);
+        environmental_noise_3m  = environmental_noise(t, temp_freq_dict("3m env"), env_3m_amp);
+        environmental_noise_10m = environmental_noise(t, temp_freq_dict("10m env"), env_10m_amp);
     
         q = zeros(n_external_sources, n_samples);
         q(2, :) = environmental_noise_1m;
@@ -82,9 +82,14 @@ function [signals, lf_brain, lf_external, freq_dict] = generate_signals()
         signal = B.brain_signal + B.sensor_noise + B.biological_noise + B.env_1m + B.env_2m + B.env_3m + B.env_10m + B.dental;
         signals{i,1} = signal;
     end
+    freq_dict = dictionary();
+    freq_dict("brain signal") = 20;
     freq_dict("dental noise") = dental_noise_f;
-    freq_dict("ecg 1") = locs(1,1);
+    freq_dict("ecg") = locs(1,1);
     freq_dict("ecg 2") = locs(1,2);
     freq_dict("ecg 3") = locs(1,3);
-    freq_dict("brain_signal") = 20;
+    freq_dict("1m env") = 12;
+    freq_dict("2m env") = 16;
+    freq_dict("3m env") = 28;
+    freq_dict("10m env") = 40;
 end
